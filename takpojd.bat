@@ -41,7 +41,7 @@ for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
     )
 )
 
-:: 🧾 Zpráva – IP s ||, ostatní bez
+:: 🧾 Zpráva – IP s ||, ostatní čistě
 set "msg=🛰️ **Systémové info**\nIP: ||!ip! ||\nČas: !timestamp!\nUživatel: !user!\nZařízení: !deviceType!\nModel: !deviceModel!"
 
 :: 📤 Odeslání na webhook
