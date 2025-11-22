@@ -37,7 +37,7 @@ for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
     )
 )
 
-:: 🧾 Zpráva – IP s ||, RAM odstraněna, každý řádek zvlášť
+:: 🧾 Zpráva – IP s ||, každý řádek zvlášť, RAM odstraněna
 set "msg=🛰️ Systémové info:^
 IP: ||!ip! ||^
 Čas: !timestamp!^
